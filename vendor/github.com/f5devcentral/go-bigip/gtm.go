@@ -1,19 +1,8 @@
-/*
-Original work Copyright © 2015 Scott Ware
-Modifications Copyright 2019 F5 Networks Inc
-Licensed under the Apache License, Version 2.0 (the "License");
-You may not use this file except in compliance with the License.
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
-*/
 package bigip
 
 import "encoding/json"
 import "log"
 
-//ooo
 
 type Datacenters struct {
 	Datacenters []Datacenter `json:"items"`
@@ -23,10 +12,10 @@ type Datacenter struct {
 	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 	Contact     string `json:"contact,omitempty"`
-	App_service string `json:"appService,omitempty"`
+	AppService  string `json:"appService,omitempty"`
 	Disabled    bool   `json:"disabled,omitempty"`
 	Enabled     bool   `json:"enabled,omitempty"`
-	Prober_pool string `json:"proberPool,omitempty"`
+	ProberPool  string `json:"proberPool,omitempty"`
 }
 
 type Gtmmonitors struct {
@@ -146,32 +135,31 @@ const (
 	uriPool_a     = "pool/a"
 )
 
-func (b *BigIP) Datacenters() (*Datacenter, error) {
+func (b *BigIP) GetDatacenter(name string) (*Datacenter, error) {
 	var datacenter Datacenter
-	err, _ := b.getForEntity(&datacenter, uriGtm, uriDatacenter)
+	err, ok := b.getForEntity(&datacenter, uriGtm, uriDatacenter,name)
 
 	if err != nil {
 		return nil, err
 	}
 
+        if !ok  {
+                return nil, nil
+        }
+
+
 	return &datacenter, nil
 }
 
-func (b *BigIP) CreateDatacenter(name, description, contact, app_service string, enabled, disabled bool, prober_pool string) error {
+func (b *BigIP) CreateDatacenter(name string) error {
 	config := &Datacenter{
-		Name:        name,
-		Description: description,
-		Contact:     contact,
-		App_service: app_service,
-		Enabled:     enabled,
-		Disabled:    disabled,
-		Prober_pool: prober_pool,
+		Name: name,
 	}
 	return b.post(config, uriGtm, uriDatacenter)
 }
 
-func (b *BigIP) ModifyDatacenter(*Datacenter) error {
-	return b.patch(uriGtm, uriDatacenter)
+func (b *BigIP) ModifyDatacenter(name string, config *Datacenter) error {
+	return b.put(config,uriGtm, uriDatacenter, name)
 }
 
 func (b *BigIP) DeleteDatacenter(name string) error {
