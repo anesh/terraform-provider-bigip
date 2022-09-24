@@ -101,7 +101,7 @@ func NewSession(host, port, user, passwd string, configOptions *ConfigOptions) *
 		Password: passwd,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
+				InsecureSkipVerify: true,
 			},
 		},
 		ConfigOptions: configOptions,

@@ -31,38 +31,55 @@ func resourceBigipGtmServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-                        
-			"virtualServerDiscovery":{
-                               Type:     schema.TypeBool,
-			       Optional: true,
 
-		        },
-                        "Addresses":{
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+			"virtualserverdiscovery": {
+				Type:     schema.TypeBool,
 				Optional: true,
+			},
+			"devices": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"address": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 		},
 	}
 }
-
 func resourceBigipGtmServerCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*bigip.BigIP)
 	name := d.Get("name").(string)
 	datacenter := d.Get("datacenter").(string)
-	virtualServerDiscovery := d.Get("virtualServerDiscovery").(string)
+	virtualserverdiscovery := d.Get("virtualserverdiscovery").(bool)
+	rs := d.Get("devices").(*schema.Set)
+	var records []bigip.DeviceRecord
+	if rs.Len() > 0 {
+		for _, r := range rs.List() {
+			record := r.(map[string]interface{})
+			records = append(records, bigip.DeviceRecord{Name: record["name"].(string), Address: record["address"].(string)})
+		}
+	}
 	log.Println("[INFO] Creating GTM Server " + name)
-        config := &bigip.Server{
-			Name:                      name,
-			Datacenter:                datacenter,
-			Virtual_Server_discovery:  virtualServerDiscovery,
-		}
+	config := &bigip.Server{
+		Name:                     name,
+		Datacenter:               datacenter,
+		Virtual_server_discovery: virtualserverdiscovery,
+		Devices:                  records,
+	}
 	err := client.CreateGtmserver(config)
-        if err != nil {
-			log.Printf("[ERROR] Unable to Create GTM Server  (%s) (%v)", name, err)
-			return err
-		}
+	if err != nil {
+		log.Printf("[ERROR] Unable to Create GTM Server  (%s) (%v)", name, err)
+		return err
+	}
 	d.SetId(name)
 	err = resourceBigipGtmServerUpdate(d, meta)
 	if err != nil {
@@ -74,6 +91,7 @@ func resourceBigipGtmServerCreate(d *schema.ResourceData, meta interface{}) erro
 
 func resourceBigipGtmServerRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*bigip.BigIP)
+	var records []map[string]interface{}
 	name := d.Id()
 	_ = d.Set("name", name)
 	log.Println("[INFO] Fetching GTM Servers " + name)
@@ -86,18 +104,19 @@ func resourceBigipGtmServerRead(d *schema.ResourceData, meta interface{}) error 
 		d.SetId("")
 		return nil
 	}
-        _ = d.Set("name",name)
-	_ = d.Set("datacenter",sv.Datacenter)
-        _ = d.Set("virtualServerDiscovery",sv.Virtual_server_discovery)
-
-        deviceNames := schema.NewSet(schema.HashString, make([]interface{}, 0, len(sv.Addresses)))
-	for _, device := range sv.Addresses {
-		FullDeviceName := device.Name
-		deviceNames.Add(FullDeviceName)
+	for _, record := range sv.Devices {
+		dRecord := map[string]interface{}{
+			"name":    record.Name,
+			"address": record.Address,
+		}
+		records = append(records, dRecord)
 	}
-	if deviceNames.Len() > 0 {
-		_ = d.Set("Addresses", deviceNames)
+	if err := d.Set("devices", records); err != nil {
+		return fmt.Errorf("Error updating devicein state for GTM Server %s: %v ", name, err)
 	}
+	_ = d.Set("name", name)
+	_ = d.Set("datacenter", sv.Datacenter)
+	_ = d.Set("virtualserverdiscovery", sv.Virtual_server_discovery)
 
 	return nil
 }
@@ -108,50 +127,56 @@ func resourceBigipGtmServerExists(d *schema.ResourceData, meta interface{}) (boo
 	name := d.Id()
 	log.Println("[INFO] Fetching Data center " + name)
 
-	dc, err := client.GetDatacenter(name)
+	sv, err := client.GetGtmserver(name)
 	if err != nil {
-		log.Printf("[ERROR] Unable to Retrieve Data center  (%s) (%v)", name, err)
+		log.Printf("[ERROR] Unable to Retrieve GTM server  (%s) (%v)", name, err)
 		return false, err
 	}
 
-	if dc == nil {
+	if sv == nil {
 		d.SetId("")
 	}
 
-	return dc != nil, nil
+	return sv != nil, nil
 }
 
-func resourceBigipGtmDataCenterUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceBigipGtmServerUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*bigip.BigIP)
 
 	name := d.Id()
-
-	dc := &bigip.Datacenter{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Contact:     d.Get("contact").(string),
-		AppService:  d.Get("appservice").(string),
-		Enabled:     d.Get("enabled").(bool),
-		ProberPool:  d.Get("prober_pool").(string),
+	rs := d.Get("devices").(*schema.Set)
+	var records []bigip.DeviceRecord
+	if rs.Len() > 0 {
+		for _, r := range rs.List() {
+			record := r.(map[string]interface{})
+			records = append(records, bigip.DeviceRecord{Name: record["name"].(string), Address: record["address"].(string)})
+		}
 	}
-	err := client.ModifyDatacenter(name, dc)
+
+	sv := &bigip.Server{
+		Name:                     d.Get("name").(string),
+		Datacenter:               d.Get("datacenter").(string),
+		Virtual_server_discovery: d.Get("virtualserverdiscovery").(bool),
+		Devices:                  records,
+	}
+	err := client.UpdateGtmserver(name, sv)
 	if err != nil {
-		log.Printf("[ERROR] Unable to modify Data center (%s) (%v)", name, err)
+		log.Printf("[ERROR] Unable to modify GTM Server (%s) (%v)", name, err)
 		return err
 	}
 
-	return resourceBigipGtmDataCenterRead(d, meta)
+	return resourceBigipGtmServerRead(d, meta)
 }
 
-func resourceBigipGtmDataCenterDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceBigipGtmServerDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*bigip.BigIP)
 
 	name := d.Id()
-	log.Println("[INFO] Deleting Data center " + name)
+	log.Println("[INFO] Deleting GTM server " + name)
 
-	err := client.DeleteDatacenter(name)
+	err := client.DeleteGtmserver(name)
 	if err != nil {
-		log.Printf("[ERROR] Unable to Delete Datacenter  (%s) (%v)", name, err)
+		log.Printf("[ERROR] Unable to Delete GTM server  (%s) (%v)", name, err)
 		return err
 	}
 	d.SetId("")
