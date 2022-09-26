@@ -225,28 +225,18 @@ func (b *BigIP) GetGtmserver(name string) (*Server, error) {
 	return &p, nil
 }
 
-func (b *BigIP) CreatePool_a(name, monitor, load_balancing_mode string, max_answers_returned int, alternate_mode, fallback_ip, fallback_mode string, members []string) error {
-	config := &Pool_a{
-		Name:                 name,
-		Monitor:              monitor,
-		Load_balancing_mode:  load_balancing_mode,
-		Max_answers_returned: max_answers_returned,
-		Alternate_mode:       alternate_mode,
-		Fallback_ip:          fallback_ip,
-		Fallback_mode:        fallback_mode,
-		Members:              members,
-	}
+func (b *BigIP) CreatePool_a(config *Pool_a) error {
 	log.Println("in poola now", config)
 	return b.patch(config, uriGtm, uriPool_a)
 }
 
-func (b *BigIP) ModifyPool_a(config *Pool_a) error {
+func (b *BigIP) ModifyPool_a(name string, config *Pool_a) error {
 	return b.put(config, uriGtm, uriPool_a)
 }
 
-func (b *BigIP) Pool_as() (*Pool_a, error) {
+func (b *BigIP) GetPool_a(name string) (*Pool_a, error) {
 	var pool_a Pool_a
-	err, _ := b.getForEntity(&pool_a, uriGtm, uriPool_a)
+	err, _ := b.getForEntity(&pool_a, uriGtm, uriPool_a,name)
 
 	if err != nil {
 		return nil, err
@@ -255,69 +245,5 @@ func (b *BigIP) Pool_as() (*Pool_a, error) {
 	return &pool_a, nil
 }
 
-// GTMAPool contains information about each gtm/pool/a
-type GTMAPool struct {
-	Name                      string `json:"name,omitempty"`
-	Partition                 string `json:"partition,omitempty"`
-	FullPath                  string `json:"fullPath,omitempty"`
-	Generation                int    `json:"generation,omitempty"`
-	AppService                string `json:"appService,omitempty"`
-	Description               string `json:"description,omitempty"`
-	Disabled                  bool   `json:"disabled,omitempty"`
-	DynamicRatio              string `json:"dynamicRatio,omitempty"`
-	Enabled                   bool   `json:"enabled,omitempty"`
-	FallbackIP                string `json:"fallbackIp,omitempty"`
-	FallbackMode              string `json:"fallbackMode,omitempty"`
-	LimitMaxBps               uint64 `json:"limitMaxBps,omitempty"`
-	LimitMaxBpsStatus         string `json:"limitMaxBpsStatus,omitempty"`
-	LimitMaxConnections       uint64 `json:"limitMaxConnections,omitempty"`
-	LimitMaxConnectionsStatus string `json:"limitMaxConnectionsStatus,omitempty"`
-	LimitMaxPps               uint64 `json:"limitMaxPps,omitempty"`
-	LimitMaxPpsStatus         string `json:"limitMaxPpsStatus,omitempty"`
-	LoadBalancingMode         string `json:"loadBalancingMode,omitempty"`
-	ManualResume              string `json:"manualResume,omitempty"`
-	MaxAnswersReturned        int    `json:"maxAnswersReturned,omitempty"`
-	Monitor                   string `json:"monitor,omitempty"`
-	TmPartition               string `json:"tmPartition,omitempty"`
-	QosHitRatio               int    `json:"qosHitRatio,omitempty"`
-	QosHops                   int    `json:"qosHops,omitempty"`
-	QosKilobytesSecond        int    `json:"qosKilobytesSecond,omitempty"`
-	QosLcs                    int    `json:"qosLcs,omitempty"`
-	QosPacketRate             int    `json:"qosPacketRate,omitempty"`
-	QosRtt                    int    `json:"qosRtt,omitempty"`
-	QosTopology               int    `json:"qosTopology,omitempty"`
-	QosVsCapacity             int    `json:"qosVsCapacity,omitempty"`
-	QosVsScore                int    `json:"qosVsScore,omitempty"`
-	TTL                       int    `json:"ttl,omitempty"`
-	VerifyMemberAvailability  string `json:"verifyMemberAvailability,omitempty"`
-	MembersReference          struct {
-		Link            string `json:"link,omitempty"`
-		IsSubcollection bool   `json:"isSubcollection,omitempty"`
-	}
-}
 
-// AddGTMAPool adds a Pool/A by config to the BIG-IP system.
-func (b *BigIP) AddGTMAPool(config *GTMAPool) error {
-	return b.post(config, uriGtm, uriPool, string(ARecord))
-}
-
-// ModifyGTMAPool adds a Pool/A by config to the BIG-IP system.
-func (b *BigIP) ModifyGTMAPool(fullPath string, config *GTMAPool) error {
-	return b.put(config, uriGtm, uriPool, string(ARecord), fullPath)
-}
-
-// GetGTMAPool get's a Pool/A by name
-func (b *BigIP) GetGTMAPool(name string) (*GTMAPool, error) {
-	var w GTMAPool
-
-	err, ok := b.getForEntity(&w, uriGtm, uriPool, string(ARecord), name)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, nil
-	}
-
-	return &w, nil
-}
 

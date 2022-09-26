@@ -159,6 +159,7 @@ func Provider() terraform.ResourceProvider {
 			"bigip_waf_policy":                      resourceBigipAwafPolicy(),
 			"bigip_gtm_datacenter":                  resourceBigipGtmDataCenter(),
 			"bigip_gtm_server":                      resourceBigipGtmServer(),
+			"bigip_gtm_poola":                       resourceBigipGtmPoola(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
