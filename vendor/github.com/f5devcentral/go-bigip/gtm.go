@@ -227,7 +227,7 @@ func (b *BigIP) GetGtmserver(name string) (*Server, error) {
 
 func (b *BigIP) CreatePool_a(config *Pool_a) error {
 	log.Println("in poola now", config)
-	return b.patch(config, uriGtm, uriPool_a)
+	return b.post(config, uriGtm, uriPool_a)
 }
 
 func (b *BigIP) ModifyPool_a(name string, config *Pool_a) error {
@@ -244,6 +244,10 @@ func (b *BigIP) GetPool_a(name string) (*Pool_a, error) {
 
 	return &pool_a, nil
 }
+
+func (b *BigIP) DeleteGtmPool_a(name string) error {
+	        return b.delete(uriGtm,uriPool_a, name)
+	}
 
 
 

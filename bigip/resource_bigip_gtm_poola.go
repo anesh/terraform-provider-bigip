@@ -12,6 +12,7 @@ func resourceBigipGtmPoola() *schema.Resource {
 		Create: resourceBigipGtmPoolaCreate,
 		Read:   resourceBigipGtmPoolaRead,
 		Update: resourceBigipGtmPoolaUpdate,
+		Delete: resourceBigipGtmPoolaDelete,
 		Exists: resourceBigipGtmPoolaExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -112,4 +113,19 @@ func resourceBigipGtmPoolaUpdate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	return resourceBigipGtmPoolaRead(d, meta)
+}
+
+func resourceBigipGtmPoolaDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*bigip.BigIP)
+
+	name := d.Id()
+	log.Println("[INFO] Deleting GTM Pool " + name)
+
+	err := client.DeleteGtmPool_a(name)
+	if err != nil {
+		log.Printf("[ERROR] Unable to Delete GTM Pool  (%s) (%v)", name, err)
+		return err
+	}
+	d.SetId("")
+	return nil
 }
