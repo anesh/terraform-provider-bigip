@@ -231,7 +231,7 @@ func (b *BigIP) CreatePool_a(config *Pool_a) error {
 }
 
 func (b *BigIP) ModifyPool_a(name string, config *Pool_a) error {
-	return b.put(config, uriGtm, uriPool_a)
+	return b.put(config, uriGtm, uriPool_a,name)
 }
 
 func (b *BigIP) GetPool_a(name string) (*Pool_a, error) {

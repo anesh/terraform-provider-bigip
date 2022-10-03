@@ -221,7 +221,13 @@ func (b *BigIP) APICall(options *APIRequest) ([]byte, error) {
 func (b *BigIP) iControlPath(parts []string) string {
 	var buffer bytes.Buffer
 	for i, p := range parts {
-		buffer.WriteString(strings.Replace(p, "/", "/", -1))
+		//buffer.WriteString(strings.Replace(p, "/", "~", -1))
+		if strings.Contains(p, "pool/a") {
+		        buffer.WriteString(strings.Replace(p, "/", "/", -1))
+	        }else{
+                        buffer.WriteString(strings.Replace(p, "/", "~", -1))
+	        }		
+
 		if i < len(parts)-1 {
 			buffer.WriteString("/")
 		}
