@@ -1,0 +1,34 @@
+package main
+
+import (
+        "encoding/json"
+        "fmt"
+)
+
+type Item struct {
+        Name                 string   `json:"name,omitempty"`
+        LastResortPool       string   `json:"lastResortPool,omitempty"`
+        Persistence          string   `json:"persistence,omitempty"`
+        PoolLbMode           string   `json:"poolLbMode,omitempty"`
+        Pools                []string `json:"pools,omitempty"`
+}
+
+
+func main() {
+
+
+
+	itemInfoR := `{"Name":"test1.gtm.net","Persistence":"disabled","PoolLbMode":"round-robin","Pools":[]}`
+	itemInfoBytes := []byte(itemInfoR)
+	var ItemInfo Item
+	fmt.Println(itemInfoBytes)
+	er := json.Unmarshal(itemInfoBytes, &ItemInfo)
+	if er != nil {
+		fmt.Println(er)
+	} else {
+		fmt.Println(ItemInfo)
+		fmt.Println(&ItemInfo)
+        }
+
+}
+

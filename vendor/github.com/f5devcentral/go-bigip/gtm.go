@@ -127,6 +127,23 @@ type Pool_a struct {
 	Members              []string `json:"members,omitempty"`
 }
 
+
+
+type Wideip_a struct {
+        Name                 string   `json:"name,omitempty"`
+	Persistence          string   `json:"persistence,omitempty"`                          
+        PoolLbMode	     string   `json:"poolLbMode,omitempty"`
+	Pools                []MemberRecord `json:"members"`
+}
+
+type MemberRecord struct {
+         Name        string `json:"name"`
+         Order       int `json:"order,omitempty"`
+         Ratio       int    `json:"ratio,omitempty"`
+
+}
+
+
 const (
 	uriGtm        = "gtm"
 	uriServer     = "server"
@@ -134,6 +151,7 @@ const (
 	uriGtmmonitor = "monitor"
 	uriHttp       = "http"
 	uriPool_a     = "pool/a"
+	uriWideip_a   = "wideip/a"
 )
 
 func (b *BigIP) GetDatacenter(name string) (*Datacenter, error) {
@@ -250,4 +268,27 @@ func (b *BigIP) DeleteGtmPool_a(name string) error {
 	}
 
 
+func (b *BigIP) CreateWideip_a(config *Wideip_a) error {
+        log.Println("Creating GTM Wideip", config)
+        return b.post(config, uriGtm, uriWideip_a)
+}
 
+func (b *BigIP) ModifyWideip_a(name string, config *Wideip_a) error {
+        return b.put(config, uriGtm, uriWideip_a,name)
+}
+
+func (b *BigIP) GetWideip_a(name string) (*Wideip_a, error) {
+        var wideip_a Wideip_a
+        err, _ := b.getForEntity(&wideip_a, uriGtm, uriWideip_a,name)
+
+        if err != nil {
+                return nil, err
+        }
+
+        return &wideip_a, nil
+}
+
+func (b *BigIP) DeleteGtmWideip_a(name string) error {
+                return b.delete(uriGtm,uriWideip_a, name)
+        }
+	

@@ -204,7 +204,7 @@ func (b *BigIP) APICall(options *APIRequest) ([]byte, error) {
 	}
 
 	defer res.Body.Close()
-
+        //fmt.Println(res)
 	data, _ := ioutil.ReadAll(res.Body)
 
 	if res.StatusCode >= 400 {
@@ -214,7 +214,6 @@ func (b *BigIP) APICall(options *APIRequest) ([]byte, error) {
 
 		return data, errors.New(fmt.Sprintf("HTTP %d :: %s", res.StatusCode, string(data[:])))
 	}
-
 	return data, nil
 }
 
@@ -224,7 +223,10 @@ func (b *BigIP) iControlPath(parts []string) string {
 		//buffer.WriteString(strings.Replace(p, "/", "~", -1))
 		if strings.Contains(p, "pool/a") {
 		        buffer.WriteString(strings.Replace(p, "/", "/", -1))
-	        }else{
+
+	        } else if strings.Contains(p, "wideip/a") {
+			buffer.WriteString(strings.Replace(p, "/", "/", -1))
+		} else {
                         buffer.WriteString(strings.Replace(p, "/", "~", -1))
 	        }		
 
@@ -453,7 +455,6 @@ func (b *BigIP) getForEntity(e interface{}, path ...string) (error, bool) {
 		URL:         b.iControlPath(path),
 		ContentType: "application/json",
 	}
-
 	resp, err := b.APICall(req)
 	if err != nil {
 		var reqError RequestError
@@ -463,12 +464,11 @@ func (b *BigIP) getForEntity(e interface{}, path ...string) (error, bool) {
 		}
 		return err, false
 	}
-
 	err = json.Unmarshal(resp, e)
+	//fmt.Printf("Received a message: %v", e)
 	if err != nil {
 		return err, false
 	}
-
 	return nil, true
 }
 

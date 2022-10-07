@@ -53,7 +53,7 @@ func resourceBigipGtmPoolaCreate(d *schema.ResourceData, meta interface{}) error
 	d.SetId(name)
 	err = resourceBigipGtmPoolaUpdate(d, meta)
 	if err != nil {
-		_ = client.DeleteGtmserver(name)
+		_ = client.DeleteGtmPool_a(name)
 		return err
 	}
 	return resourceBigipGtmPoolaRead(d, meta)

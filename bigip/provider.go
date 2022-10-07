@@ -160,6 +160,7 @@ func Provider() terraform.ResourceProvider {
 			"bigip_gtm_datacenter":                  resourceBigipGtmDataCenter(),
 			"bigip_gtm_server":                      resourceBigipGtmServer(),
 			"bigip_gtm_poola":                       resourceBigipGtmPoola(),
+			"bigip_gtm_wideipa":                     resourceBigipGtmWideipa(),
 		},
 	}
 	p.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
