@@ -63,6 +63,6 @@ resource "bigip_gtm_wideipa" "wideip" {
 
 # Using the Provider
 
-You can download the binary from the releases section of this repo and follow the instructions of installing terraform plugins.
+You can download the binary from the releases [section](https://github.com/anesh/terraform-provider-bigip/releases) of this repo and follow the instructions of installing terraform plugins.
 
 
