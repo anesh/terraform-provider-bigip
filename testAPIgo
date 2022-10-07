@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// Connect to the BIG-IP system.
-	f5 := bigip.NewSession("10.124.5.244", "443","admin", "chakku@chakku1",nil)
+	f5 := bigip.NewSession("10.124.5.244", "443","admin", "password",nil)
 	/*var records  []bigip.DeviceRecord
         records = append(records, bigip.DeviceRecord{Name: "test1.ns.ctc",Address: "3.3.3.3"})
         config := &bigip.Server{
@@ -30,7 +30,7 @@ func main() {
         var records  []bigip.MemberRecord
         records = append(records, bigip.MemberRecord{Name: "/Common/test.ns.ctc"})
         config := &bigip.Wideip_a{
-                Name:               "test1.wip.ns.ctc",
+                Name:               "test2.wip.ns.ctc",
                 Pools:               records,
         }
 

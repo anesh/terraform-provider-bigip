@@ -96,9 +96,9 @@ func resourceBigipGtmWideipaRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("name", name)
 	for _, record := range gw.Pools {
 		dRecord := map[string]interface{}{
-			"name":    record.Name,
-			"address": record.Order,
-			"ratio":   record.Ratio,
+			"name":  record.Name,
+			"order": record.Order,
+			"ratio": record.Ratio,
 		}
 		records = append(records, dRecord)
 	}

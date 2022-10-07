@@ -133,7 +133,7 @@ type Wideip_a struct {
         Name                 string   `json:"name,omitempty"`
 	Persistence          string   `json:"persistence,omitempty"`                          
         PoolLbMode	     string   `json:"poolLbMode,omitempty"`
-	Pools                []MemberRecord `json:"members"`
+	Pools                []MemberRecord `json:"pools"`
 }
 
 type MemberRecord struct {
